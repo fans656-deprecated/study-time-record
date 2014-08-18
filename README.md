@@ -1,5 +1,7 @@
 # 记录每天的学习时间
 
+![Screenshot](https://raw.githubusercontent.com/fans656/image-hosting/master/20140818134314.png)
+
 ## 操作
 空格键 开始/停止
 
