@@ -1,0 +1,10 @@
+[DEFAULT]
+font = Inconsolata
+record-file = studyTimeRecord.txt
+color-total = #BDF2BC
+font-shrink-ratio = 0.6
+color-back = #000000
+color-remain = #FACA8E
+color-session = #D5D5D5
+margin-ratio = 0.05
+
