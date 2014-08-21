@@ -91,9 +91,9 @@ class Record:
     def save(self, isNew):
         with open(RECORD_FILENAME, 'a') as f:
             if isNew:
-                f.write('\n\n{}'.format(self.date))
+                f.write('\n{}\n'.format(self.date))
             for session in self.sessions[self.nOldSessions:-1]:
-                f.write('\n{}'.format(session))
+                f.write('{}\n'.format(session))
             self.nOldSessions = len(self.sessions) - 1
 
 class Records:
