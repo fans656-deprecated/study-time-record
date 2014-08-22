@@ -1,0 +1,5 @@
+- 在下方绘制历史记录柱状图
+- 在 session 左侧标注 开始/停止 时间
+- 使用 config file
+    目前 record.py 中使用了和 main.py 中相同的全局变量 RECORD_FILENAME
+    尽管前者只作读操作
