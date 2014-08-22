@@ -3,7 +3,8 @@ import re
 import datetime
 import time
 
-RECORD_FILENAME = None
+import config
+
 EXPECT_SPAN = datetime.timedelta(hours=8)
 DATE_FORMAT = '%Y-%m-%d'
 TIME_FORMAT = '%H:%M:%S'
@@ -67,6 +68,12 @@ class Record:
         self.lastSession().update()
         self.total = sum((_.span() for _ in self.sessions), datetime.timedelta())
 
+    def spans(self):
+        getters = (getattr(self, attrName) for attrName in
+                 ('currentSessionSpan', 'todayTotalSpan', 'todayLeftSpan'))
+        spans = (getter() for getter in getters)
+        return (fmtSpan(span) for span in spans)
+
     def currentSessionSpan(self):
         return fmtSpan(self.lastSession().span())
 
@@ -86,7 +93,7 @@ class Record:
         return '{}\n{}'.format(self.date, '\n'.join(map(str, self.sessions)))
 
     def save(self, isNew):
-        with open(RECORD_FILENAME, 'a') as f:
+        with open(config.RECORD_FILENAME, 'a') as f:
             if isNew:
                 f.write('\n{}\n'.format(self.date))
             for session in self.sessions[self.nOldSessions:-1]:
@@ -118,9 +125,7 @@ class Records:
         self.lastRecord().update()
 
     def load(self, fileName):
-        global RECORD_FILENAME 
-        RECORD_FILENAME = fileName
-        lines = [_.strip() for _ in open(fileName).readlines()]
+        lines = [_.strip() for _ in open(config.RECORD_FILENAME).readlines()]
         self.records = [Record(*g) for k, g in itertools.groupby(lines, bool) if k]
         # today record
         try:

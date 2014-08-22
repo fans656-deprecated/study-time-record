@@ -3,37 +3,39 @@ import sys
 from PySide.QtGui import *
 from PySide.QtCore import *
 
+import util
+import config
 import record
 
-RECORD_FILENAME = 'studyTimeRecord.txt'
-
+@util._super
 class Widget(QDialog):
+
     def __init__(self, parent=None):
-        super(Widget, self).__init__(parent)
+        self._super().__init__(parent)
         # data
         self.started = False
-        self.records = record.Records(RECORD_FILENAME)
-        self.spans = []
+        self.records = record.Records(config.RECORD_FILENAME)
+        self.spans = self.records.lastRecord().spans()
         # timer
         self.timer = QTimer()
         self.timer.timeout.connect(self.onTimeout)
         # misc
         self.setTitle()
-        self.resize(320, 240)
-        # go
-        self.timer.start(100)
+        self.resize(*config.WINDOW_SIZE)
+        self.timer.start(config.REFRESH_INTERVAL)
 
     def onTimeout(self):
         self.records.update()
-        spans = [getattr(self.records.lastRecord(), _)() for _ in
-                ['currentSessionSpan', 'todayTotalSpan', 'todayLeftSpan']]
-        # text drawing is time consuming
-        # so only if the updated spans is different from the previous ones
-        # then we actually do the drawing
-        if self.spans != spans:
-            #print self.spans, spans
-            self.spans = spans
+        if self.needRedraw():
             self.update()
+
+    def needRedraw(self):
+        spans = self.records.lastRecord().spans()
+        if self.spans == spans:
+            return False
+        else:
+            self.spans = spans
+            return True
 
     def keyPressEvent(self, event):
         if not event.isAutoRepeat():
@@ -50,7 +52,8 @@ class Widget(QDialog):
                 else:
                     self.hide()
                     self.showMaximized()
-        super(Widget, self).keyPressEvent(event)
+                return
+        self._super().keyPressEvent(event)
 
     def paintEvent(self, event):
         p = QPainter(self)

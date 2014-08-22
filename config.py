@@ -1,0 +1,4 @@
+RECORD_FILENAME = 'studyTimeRecord.txt'
+
+WINDOW_SIZE = (320, 240)
+REFRESH_INTERVAL = 100
