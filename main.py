@@ -123,7 +123,6 @@ class Records:
     def load(self, fileName):
         lines = [_.strip() for _ in open(fileName).readlines()]
         self.records = [Record(*g) for k, g in itertools.groupby(lines, bool) if k]
-        # today record
         try:
             lastRec = self.records[-1]
         except IndexError:
