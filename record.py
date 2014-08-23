@@ -5,9 +5,9 @@ import time
 
 import config
 
-EXPECT_SPAN = datetime.timedelta(hours=8)
-DATE_FORMAT = '%Y-%m-%d'
-TIME_FORMAT = '%H:%M:%S'
+EXPECT_SPAN = config.EXPECT_SPAN
+DATE_FORMAT = config.DATE_FORMAT
+TIME_FORMAT = config.TIME_FORMAT
 DATETIME_FORMAT = '{} {}'.format(DATE_FORMAT, TIME_FORMAT)
 
 now = lambda: datetime.datetime.now()
@@ -74,6 +74,9 @@ class Record:
         spans = (getter() for getter in getters)
         return (fmtSpan(span) for span in spans)
 
+    def totalSeconds(self):
+        return self.total.total_seconds()
+
     def currentSessionSpan(self):
         return fmtSpan(self.lastSession().span())
 
@@ -136,6 +139,15 @@ class Records:
         self.isNewRecord = not lastRec or lastRec.date != rec.date
         if self.isNewRecord:
             self.records.append(rec)
+        self.insertMissedRecords()
+
+    def insertMissedRecords(self):
+        try:
+            firstRecord = self.records[0]
+            lastRecord = self.records[-1]
+        except IndexError:
+            return
+        # TODO
 
     def save(self):
         self.lastRecord().save(self.isNewRecord)
@@ -143,6 +155,11 @@ class Records:
 
     def lastRecord(self):
         return self.records[-1]
+
+    def averageSeconds(self):
+        nDays = (now() - pDate(self.records[0].date)).days + 1
+        ave = sum((_.total / nDays for _ in self.records), datetime.timedelta())
+        return ave.total_seconds()
 
     def printDailyAverage(self):
         nDays = (now() - pDate(self.records[0].date)).days + 1

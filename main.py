@@ -1,4 +1,5 @@
 import sys
+import datetime
 
 from PySide.QtGui import *
 from PySide.QtCore import *
@@ -14,6 +15,8 @@ class Widget(QDialog):
         self._super().__init__(parent)
         # data
         self.started = False
+        self.isDrawingStatistics = False
+        self.statisticsHeight = 0.0
         self.records = record.Records(config.RECORD_FILENAME)
         self.spans = self.records.lastRecord().spans()
         # timer
@@ -43,8 +46,14 @@ class Widget(QDialog):
                 self.toggle()
                 return
             elif event.text() == 's':
-                self.records.printDailyAverage()
-                return
+                self.isDrawingStatistics = not self.isDrawingStatistics 
+                if self.isDrawingStatistics:
+                    self.records.printDailyAverage()
+                    self.averageSeconds = self.records.averageSeconds()
+                    self.statisticsHeight = self.height() * config.statisticsHeightRatio
+                    self.update()
+                else:
+                    self.statisticsHeight = 0.0
             # this showed that text drawing is time consuming
             elif event.text() == 'm':
                 if self.width() > 400:
@@ -57,25 +66,56 @@ class Widget(QDialog):
 
     def paintEvent(self, event):
         p = QPainter(self)
-        # misc
+        p.fillRect(self.rect(), QColor('#000'))
+
+        self.drawRecord(p)
+        if self.isDrawingStatistics:
+            self.drawRecordsStat(p)
+
+    def drawRecord(self, painter):
         rc = self.rect()
+        rc.setBottom(rc.bottom() - self.statisticsHeight)
         textHeight = rc.height() / 3
-        # font
-        font = p.font()
+
+        font = painter.font()
         font.setFamily('Inconsolata')
         font.setPixelSize(textHeight)
-        p.setFont(font)
-        # data
+        painter.setFont(font)
+
         spans = self.spans
         colors = ('#D5D5D5', '#BDF2BC', '#FACA8E')
-        # paint
-        p.fillRect(rc, QBrush(QColor('#000')))
+
         for span, color in zip(spans, colors):
-            pen = p.pen()
+            pen = painter.pen()
             pen.setColor(QColor(color))
-            p.setPen(pen)
-            p.drawText(rc, Qt.AlignRight, span)
+            painter.setPen(pen)
+            painter.drawText(rc, Qt.AlignRight, span)
             rc.translate(0, textHeight)
+
+    def drawRecordsStat(self, painter):
+        records = self.records.records
+        dx = self.width() / float(len(records))
+        # hue saturation value
+        hueLow = config.hueLow
+        hueHigh = config.hueHigh
+        hueRange = hueHigh - hueLow
+        # histogram
+        expectSeconds = config.EXPECT_SPAN.total_seconds()
+        color = QColor()
+        for i, record in enumerate(records):
+            ratio = record.totalSeconds() / expectSeconds
+            h = self.statisticsHeight * ratio
+            rc = QRect(i * dx, self.height() - h, dx - 1, h)
+            color.setHsv(hueLow + hueRange * ratio, config.saturation, config.value)
+            painter.fillRect(rc, color)
+        # separation line
+        pen = painter.pen(); pen.setColor(QColor(*config.separationLineColor)); painter.setPen(pen)
+        y = self.height() - self.statisticsHeight
+        painter.drawLine(0, y, self.width(), y)
+        # average line
+        pen = painter.pen(); pen.setColor(QColor(*config.averageLineColor)); painter.setPen(pen)
+        y = self.height() - self.statisticsHeight * self.averageSeconds / expectSeconds
+        painter.drawLine(0, y, self.width(), y)
 
     def toggle(self):
         self.records.toggle()
