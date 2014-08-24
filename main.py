@@ -70,7 +70,7 @@ class Widget(QDialog):
 
         self.drawRecord(p)
         if self.isDrawingStatistics:
-            self.drawRecordsStat(p)
+            self.drawRecordsStatistics(p)
 
     def drawRecord(self, painter):
         rc = self.rect()
@@ -92,7 +92,7 @@ class Widget(QDialog):
             painter.drawText(rc, Qt.AlignRight, span)
             rc.translate(0, textHeight)
 
-    def drawRecordsStat(self, painter):
+    def drawRecordsStatistics(self, painter):
         records = self.records.records
         dx = self.width() / float(len(records))
         # hue saturation value
@@ -108,13 +108,13 @@ class Widget(QDialog):
             rc = QRect(i * dx, self.height() - h, dx - 1, h)
             color.setHsv(hueLow + hueRange * ratio, config.saturation, config.value)
             painter.fillRect(rc, color)
-        # separation line
-        pen = painter.pen(); pen.setColor(QColor(*config.separationLineColor)); painter.setPen(pen)
-        y = self.height() - self.statisticsHeight
-        painter.drawLine(0, y, self.width(), y)
         # average line
         pen = painter.pen(); pen.setColor(QColor(*config.averageLineColor)); painter.setPen(pen)
         y = self.height() - self.statisticsHeight * self.averageSeconds / expectSeconds
+        painter.drawLine(0, y, self.width(), y)
+        # expect line
+        pen = painter.pen(); pen.setColor(QColor(*config.expectLineColor)); painter.setPen(pen)
+        y = self.height() - self.statisticsHeight
         painter.drawLine(0, y, self.width(), y)
 
     def toggle(self):

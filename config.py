@@ -14,6 +14,6 @@ hueHigh = 145
 saturation = 255 * 0.54
 value = 255 * 0.8
 
-separationLineColor = (255, 255, 255)
-averageLineColor = (38, 133, 50)
+expectLineColor = (105, 206, 103)
+averageLineColor = (20,) * 3
 statisticsHeightRatio = 0.3
