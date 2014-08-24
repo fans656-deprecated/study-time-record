@@ -4,6 +4,10 @@ import datetime
 from PySide.QtGui import *
 from PySide.QtCore import *
 
+import util
+import config
+import record
+
 @util._super
 class Widget(QDialog):
 
