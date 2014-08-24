@@ -47,9 +47,9 @@ class Widget(QDialog):
                     self.records.printDailyAverage()
                     self.averageSeconds = self.records.averageSeconds()
                     self.statisticsHeight = self.height() * config.statisticsHeightRatio
-                    self.update()
                 else:
                     self.statisticsHeight = 0.0
+                self.update()
             # this showed that text drawing is time consuming
             elif event.text() == 'm':
                 if self.width() > 400:
