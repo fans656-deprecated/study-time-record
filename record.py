@@ -2,6 +2,7 @@ import itertools
 import re
 import datetime
 import time
+import collections
 
 import config
 
@@ -22,6 +23,7 @@ class Session:
     def __init__(self, *args):
         self.started = False
         if not args:
+            # dummy session, beg == end
             t = now()
             self.init(t, t)
         elif len(args) == 1:
@@ -53,9 +55,14 @@ class Session:
 class Record:
     def __init__(self, date=None, *sessions):
         self.date = date if date else fmtDate(now())
+        # at least one (dummy) session
         self.sessions = [Session(_) for _ in sessions] + [Session()]
         self.nOldSessions = len(self.sessions) - 1
         self.update()
+
+    def getDate(self):
+        dt = datetime.datetime.strptime(self.date, config.DATE_FORMAT)
+        return dt.date()
 
     def start(self):
         self.lastSession().start()
@@ -128,8 +135,10 @@ class Records:
         self.lastRecord().update()
 
     def load(self, fileName):
-        lines = [_.strip() for _ in open(config.RECORD_FILENAME).readlines()]
-        self.records = [Record(*g) for k, g in itertools.groupby(lines, bool) if k]
+        lines = [_.strip() for _ in
+                open(config.RECORD_FILENAME).readlines()]
+        self.records = [Record(*g) for k, g in
+                itertools.groupby(lines, bool) if k]
         # today record
         try:
             lastRec = self.records[-1]
@@ -147,7 +156,22 @@ class Records:
             lastRecord = self.records[-1]
         except IndexError:
             return
-        # TODO
+        beg = firstRecord.getDate()
+        end = lastRecord.getDate()
+        nDays = (end - beg).days + 1
+
+        availRecords = collections.deque(self.records)
+        records = []
+        dates = (beg + datetime.timedelta(days=i) for i in range(nDays))
+        for date in dates:
+            availRecord = availRecords[0]
+            if date == availRecord.getDate():
+                record = availRecord
+                availRecords.popleft()
+            else:
+                record = Record(fmtDate(date))
+            records.append(record)
+        self.records = records
 
     def save(self):
         self.lastRecord().save(self.isNewRecord)
@@ -161,7 +185,5 @@ class Records:
         ave = sum((_.total / nDays for _ in self.records), datetime.timedelta())
         return ave.total_seconds()
 
-    def printDailyAverage(self):
-        nDays = (now() - pDate(self.records[0].date)).days + 1
-        ave = sum((_.total / nDays for _ in self.records), datetime.timedelta())
-        print '{} in {} days'.format(ave, nDays)
+if __name__ == '__main__':
+    records = Records(config.RECORD_FILENAME)

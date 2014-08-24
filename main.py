@@ -48,7 +48,6 @@ class Widget(QDialog):
             elif event.text() == 's':
                 self.isDrawingStatistics = not self.isDrawingStatistics 
                 if self.isDrawingStatistics:
-                    self.records.printDailyAverage()
                     self.averageSeconds = self.records.averageSeconds()
                     self.statisticsHeight = self.height() * config.statisticsHeightRatio
                 else:
