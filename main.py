@@ -30,6 +30,7 @@ class Widget(QDialog):
     def onTimeout(self):
         self.records.update()
         if self.needRedraw():
+            self.averageSeconds = self.records.averageSeconds()
             self.update()
 
     def needRedraw(self):
@@ -48,7 +49,8 @@ class Widget(QDialog):
             elif event.text() == 's':
                 self.isDrawingStatistics = not self.isDrawingStatistics 
                 if self.isDrawingStatistics:
-                    self.averageSeconds = self.records.averageSeconds()
+                    if not hasattr(self, 'averageSeconds'):
+                        self.averageSeconds = self.records.averageSeconds()
                     self.statisticsHeight = self.height() * config.statisticsHeightRatio
                 else:
                     self.statisticsHeight = 0.0
