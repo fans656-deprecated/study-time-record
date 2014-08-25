@@ -82,7 +82,9 @@ class Widget(QDialog):
         painter.setFont(font)
 
         spans = self.spans
-        colors = ('#D5D5D5', '#BDF2BC', '#FACA8E')
+        colors = (config.sessionColor,
+                  config.totalColor,
+                  config.remainColor)
 
         for span, color in zip(spans, colors):
             pen = painter.pen()
@@ -115,6 +117,25 @@ class Widget(QDialog):
         pen = painter.pen(); pen.setColor(QColor(*config.expectLineColor)); painter.setPen(pen)
         y = self.height() - self.statisticsHeight
         painter.drawLine(0, y, self.width(), y)
+        # draw statistics text
+        self.drawStatisticsText(painter)
+
+    def drawStatisticsText(self, painter):
+        font = painter.font()
+        font.setPointSize(17)
+        painter.setFont(font)
+        pen = painter.pen()
+        pen.setColor(config.sessionColor)
+        painter.setPen(pen)
+
+        rc = self.rect()
+        rc.setBottom(self.height() - self.statisticsHeight)
+        rc.moveLeft(20)
+
+        fmt = '{:10} {}'
+        average = record.fmtSpan(datetime.timedelta(seconds=self.averageSeconds))
+        text = fmt.format('Average', average)
+        painter.drawText(rc, Qt.AlignBottom, text)
 
     def toggle(self):
         self.records.toggle()

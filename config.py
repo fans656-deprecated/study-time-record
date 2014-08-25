@@ -14,6 +14,10 @@ hueHigh = 145
 saturation = 255 * 0.54
 value = 255 * 0.8
 
+sessionColor = '#D5D5D5'
+totalColor = '#BDF2BC'
+remainColor = '#FACA8E'
+
 expectLineColor = (105, 206, 103)
 averageLineColor = (20,) * 3
 statisticsHeightRatio = 0.3
