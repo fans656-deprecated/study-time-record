@@ -192,5 +192,11 @@ class Records:
         ave = sum((_.total / nDays for _ in self.records), datetime.timedelta())
         return ave.total_seconds()
 
+    def maxSpan(self):
+        return max(r.todayTotalSpan() for r in self.records)
+
+    def formatedMaxSpan(self):
+        return fmtSpan(self.maxSpan())
+
 if __name__ == '__main__':
     records = Records(config.RECORD_FILENAME)
