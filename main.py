@@ -134,13 +134,11 @@ class Widget(QDialog):
         rc.setBottom(self.height() - self.statisticsHeight)
         rc.moveLeft(20)
 
-        fmt = '{:10} {}'
         average = record.fmtSpan(datetime.timedelta(seconds=self.averageSeconds))
         maxspan = self.records.formatedMaxSpan()
-        text = '\n'.join([fmt] * 2).format(
-                'Max', maxspan,
-                'Average', average,
-                )
+        text = '\n'.join((
+                '{:10} {}'.format('Max', maxspan),
+                '{:10} {} * {}'.format('Average', average, len(self.records.records))))
         painter.drawText(rc, Qt.AlignBottom, text)
 
     def toggle(self):
