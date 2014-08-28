@@ -10,7 +10,7 @@ WINDOW_SIZE = (320, 240)
 REFRESH_INTERVAL = 100
 
 hueLow = 0
-hueHigh = 130
+hueHigh = 120
 saturation = 255 * 0.54
 value = 255 * 0.8
 
