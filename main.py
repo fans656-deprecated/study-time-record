@@ -47,7 +47,7 @@ class Widget(QDialog):
                 self.toggle()
                 return
             elif event.text() == 's':
-                self.isDrawingStatistics = not self.isDrawingStatistics 
+                self.isDrawingStatistics = not self.isDrawingStatistics
                 if self.isDrawingStatistics:
                     if not hasattr(self, 'averageSeconds'):
                         self.averageSeconds = self.records.averageSeconds()
@@ -109,7 +109,8 @@ class Widget(QDialog):
             ratio = record.totalSeconds() / expectSeconds
             h = self.statisticsHeight * ratio
             rc = QRect(i * dx, self.height() - h, dx - 1, h)
-            color.setHsv(hueLow + hueRange * ratio, config.saturation, config.value)
+            hue = hueLow + hueRange * (ratio if ratio <= 1.0 else 1.0)
+            color.setHsv(hue, config.saturation, config.value)
             painter.fillRect(rc, color)
         # average line
         pen = painter.pen(); pen.setColor(QColor(*config.averageLineColor)); painter.setPen(pen)

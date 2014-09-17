@@ -80,7 +80,7 @@ class Record:
         getters = (getattr(self, attrName) for attrName in
                  ('currentSessionSpan', 'todayTotalSpan', 'todayLeftSpan'))
         spans = (getter() for getter in getters)
-        return [fmtSpan(span) for span in spans]
+        return [span for span in spans]
 
     def totalSeconds(self):
         return self.total.total_seconds()
