@@ -30,6 +30,7 @@ class Widget(QDialog):
     def onTimeout(self):
         self.records.update()
         if self.needRedraw():
+            self.averageSeconds = self.records.averageSeconds()
             self.update()
 
     def needRedraw(self):
@@ -46,9 +47,10 @@ class Widget(QDialog):
                 self.toggle()
                 return
             elif event.text() == 's':
-                self.isDrawingStatistics = not self.isDrawingStatistics 
+                self.isDrawingStatistics = not self.isDrawingStatistics
                 if self.isDrawingStatistics:
-                    self.averageSeconds = self.records.averageSeconds()
+                    if not hasattr(self, 'averageSeconds'):
+                        self.averageSeconds = self.records.averageSeconds()
                     self.statisticsHeight = self.height() * config.statisticsHeightRatio
                 else:
                     self.statisticsHeight = 0.0
@@ -82,7 +84,9 @@ class Widget(QDialog):
         painter.setFont(font)
 
         spans = self.spans
-        colors = ('#D5D5D5', '#BDF2BC', '#FACA8E')
+        colors = (config.sessionColor,
+                  config.totalColor,
+                  config.remainColor)
 
         for span, color in zip(spans, colors):
             pen = painter.pen()
@@ -105,7 +109,8 @@ class Widget(QDialog):
             ratio = record.totalSeconds() / expectSeconds
             h = self.statisticsHeight * ratio
             rc = QRect(i * dx, self.height() - h, dx - 1, h)
-            color.setHsv(hueLow + hueRange * ratio, config.saturation, config.value)
+            hue = hueLow + hueRange * (ratio if ratio <= 1.0 else 1.0)
+            color.setHsv(hue, config.saturation, config.value)
             painter.fillRect(rc, color)
         # average line
         pen = painter.pen(); pen.setColor(QColor(*config.averageLineColor)); painter.setPen(pen)
@@ -115,6 +120,27 @@ class Widget(QDialog):
         pen = painter.pen(); pen.setColor(QColor(*config.expectLineColor)); painter.setPen(pen)
         y = self.height() - self.statisticsHeight
         painter.drawLine(0, y, self.width(), y)
+        # draw statistics text
+        self.drawStatisticsText(painter)
+
+    def drawStatisticsText(self, painter):
+        font = painter.font()
+        font.setPointSize(17)
+        painter.setFont(font)
+        pen = painter.pen()
+        pen.setColor(config.sessionColor)
+        painter.setPen(pen)
+
+        rc = self.rect()
+        rc.setBottom(self.height() - self.statisticsHeight)
+        rc.moveLeft(20)
+
+        average = record.fmtSpan(datetime.timedelta(seconds=self.averageSeconds))
+        maxspan = self.records.formatedMaxSpan()
+        text = '\n'.join((
+                '{:10} {}'.format('Max', maxspan),
+                '{:10} {} * {}'.format('Average', average, len(self.records.records))))
+        painter.drawText(rc, Qt.AlignBottom, text)
 
     def toggle(self):
         self.records.toggle()

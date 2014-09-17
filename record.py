@@ -23,7 +23,7 @@ class Session:
     def __init__(self, *args):
         self.started = False
         if not args:
-            # dummy session, beg == end
+            # zero spaned session, beg == end
             t = now()
             self.init(t, t)
         elif len(args) == 1:
@@ -55,9 +55,10 @@ class Session:
 class Record:
     def __init__(self, date=None, *sessions):
         self.date = date if date else fmtDate(now())
-        # at least one (dummy) session
-        self.sessions = [Session(_) for _ in sessions] + [Session()]
-        self.nOldSessions = len(self.sessions) - 1
+        # if no record data (i.e. sessions) available
+        # then make sure there are at least one (zero spaned) session
+        self.sessions = map(Session, sessions) + [Session()]
+        self.nOldSessions = len(sessions)
         self.update()
 
     def getDate(self):
@@ -79,7 +80,7 @@ class Record:
         getters = (getattr(self, attrName) for attrName in
                  ('currentSessionSpan', 'todayTotalSpan', 'todayLeftSpan'))
         spans = (getter() for getter in getters)
-        return [fmtSpan(span) for span in spans]
+        return [span for span in spans]
 
     def totalSeconds(self):
         return self.total.total_seconds()
@@ -105,9 +106,19 @@ class Record:
     def save(self, isNew):
         with open(config.RECORD_FILENAME, 'a') as f:
             if isNew:
+                # write date
                 f.write('\n{}\n'.format(self.date))
+            # Though seems like we are not saving the last session
+            # into file, we won't lose anything.
+            # Because when we save, we will always at a stoped stage.
+            # And Record.stop() will stop the running session and
+            # append a new one.
+            # So we only lose the new appended zero spaned session
+            # which is indeed not for saving into file.
             for session in self.sessions[self.nOldSessions:-1]:
+                # write session
                 f.write('{}\n'.format(session))
+            # now we only have one unsaved (zero spaned) session
             self.nOldSessions = len(self.sessions) - 1
 
 class Records:
@@ -135,19 +146,15 @@ class Records:
         self.lastRecord().update()
 
     def load(self, fileName):
-        lines = [_.strip() for _ in
-                open(config.RECORD_FILENAME).readlines()]
-        self.records = [Record(*g) for k, g in
-                itertools.groupby(lines, bool) if k]
-        # today record
-        try:
-            lastRec = self.records[-1]
-        except IndexError:
-            lastRec = None
-        rec = Record()
-        self.isNewRecord = not lastRec or lastRec.date != rec.date
+        lines = [_.strip() for _ in open(config.RECORD_FILENAME).readlines()]
+        self.records = [Record(*g) for k, g in itertools.groupby(lines, bool) if k]
+        todayRecord = Record()
+        if self.records:
+            self.isNewRecord = self.lastRecord().date != todayRecord.date
+        else:
+            self.isNewRecord = True
         if self.isNewRecord:
-            self.records.append(rec)
+            self.records.append(todayRecord)
         self.insertMissedRecords()
 
     def insertMissedRecords(self):
@@ -184,6 +191,12 @@ class Records:
         nDays = (now() - pDate(self.records[0].date)).days + 1
         ave = sum((_.total / nDays for _ in self.records), datetime.timedelta())
         return ave.total_seconds()
+
+    def maxSpan(self):
+        return max(r.todayTotalSpan() for r in self.records)
+
+    def formatedMaxSpan(self):
+        return fmtSpan(self.maxSpan())
 
 if __name__ == '__main__':
     records = Records(config.RECORD_FILENAME)
