@@ -84,6 +84,7 @@ class Widget(QDialog):
         painter.setFont(font)
 
         spans = self.spans
+        print spans
         colors = (config.sessionColor,
                   config.totalColor,
                   config.remainColor)

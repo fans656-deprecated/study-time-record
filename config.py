@@ -1,7 +1,7 @@
 import datetime
 
 RECORD_FILENAME = 'studyTimeRecord.txt'
-EXPECT_SPAN = datetime.timedelta(hours=8)
+EXPECT_SPAN = datetime.timedelta(hours=9)
 
 DATE_FORMAT = '%Y-%m-%d'
 TIME_FORMAT = '%H:%M:%S'

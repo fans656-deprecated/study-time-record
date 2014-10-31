@@ -15,7 +15,7 @@ now = lambda: datetime.datetime.now()
 fmtTime = lambda t: t.strftime(TIME_FORMAT)
 fmtDate = lambda t: t.strftime(DATE_FORMAT)
 fmtDateTime = lambda t: t.strftime(DATETIME_FORMAT)
-fmtSpan = lambda t: re.match('.*(\d+:\d{2}:\d{2}).*', str(t)).group(1)
+fmtSpan = lambda t: re.match('(\d+:\d{2}:\d{2}).*', str(t)).group(1)
 pDate = lambda s: datetime.datetime.strptime(s, DATE_FORMAT)
 pTime = lambda s: datetime.datetime.strptime(s, TIME_FORMAT)
 
@@ -80,6 +80,7 @@ class Record:
         getters = (getattr(self, attrName) for attrName in
                  ('currentSessionSpan', 'todayTotalSpan', 'todayLeftSpan'))
         spans = (getter() for getter in getters)
+        print spans
         return [span for span in spans]
 
     def totalSeconds(self):
