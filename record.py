@@ -80,7 +80,6 @@ class Record:
         getters = (getattr(self, attrName) for attrName in
                  ('currentSessionSpan', 'todayTotalSpan', 'todayLeftSpan'))
         spans = (getter() for getter in getters)
-        print spans
         return [span for span in spans]
 
     def totalSeconds(self):
@@ -194,7 +193,8 @@ class Records:
         return ave.total_seconds()
 
     def maxSpan(self):
-        return max(r.todayTotalSpan() for r in self.records)
+        # todayTotalSpan() is string, so 10:00:00 < 9:00:00
+        return max(r.total for r in self.records)
 
     def formatedMaxSpan(self):
         return fmtSpan(self.maxSpan())
