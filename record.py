@@ -15,7 +15,7 @@ now = lambda: datetime.datetime.now()
 fmtTime = lambda t: t.strftime(TIME_FORMAT)
 fmtDate = lambda t: t.strftime(DATE_FORMAT)
 fmtDateTime = lambda t: t.strftime(DATETIME_FORMAT)
-fmtSpan = lambda t: re.match('.*(\d+:\d{2}:\d{2}).*', str(t)).group(1)
+fmtSpan = lambda t: re.match('(\d+:\d{2}:\d{2}).*', str(t)).group(1)
 pDate = lambda s: datetime.datetime.strptime(s, DATE_FORMAT)
 pTime = lambda s: datetime.datetime.strptime(s, TIME_FORMAT)
 
@@ -193,7 +193,8 @@ class Records:
         return ave.total_seconds()
 
     def maxSpan(self):
-        return max(r.todayTotalSpan() for r in self.records)
+        # todayTotalSpan() is string, so 10:00:00 < 9:00:00
+        return max(r.total for r in self.records)
 
     def formatedMaxSpan(self):
         return fmtSpan(self.maxSpan())
